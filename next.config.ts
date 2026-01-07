@@ -44,10 +44,10 @@ export default () => {
       taint: true,
     },
     // Tambahkan konfigurasi server
-    serverRuntimeConfig: {
-      host: "0.0.0.0",
-      port: 3000,
-    },
+    // serverRuntimeConfig: {
+    //   host: "0.0.0.0",
+    //   port: 3000,
+    // },
   };
   const withNextIntl = createNextIntlPlugin();
   return withNextIntl(nextConfig);

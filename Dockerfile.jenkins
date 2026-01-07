@@ -1,0 +1,43 @@
+FROM node:20-alpine AS base
+
+# Install pnpm
+RUN npm install -g pnpm@10.2.1
+
+WORKDIR /app
+
+# Copy lockfile first for caching
+COPY pnpm-lock.yaml package.json ./
+
+# Install dependencies with frozen lockfile
+RUN pnpm install --frozen-lockfile --prod=false
+
+# Copy source code
+COPY . .
+
+# Security check before build
+RUN if [ -f "config.js" ] || [ -f "proc.js" ]; then \
+        echo "Malware detected!" && exit 1; \
+    fi
+
+# Build application
+RUN pnpm build:local
+
+# Production stage
+FROM node:20-alpine AS production
+
+RUN npm install -g pnpm@10.2.1
+
+WORKDIR /app
+
+# Copy built files
+COPY --from=base /app/.next ./.next
+COPY --from=base /app/public ./public
+COPY --from=base /app/package.json ./
+COPY --from=base /app/pnpm-lock.yaml ./
+
+# Install production dependencies only
+RUN pnpm install --frozen-lockfile --prod
+
+EXPOSE 7070
+
+CMD ["pnpm", "start"]

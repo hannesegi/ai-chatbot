@@ -1,1 +1,21 @@
-pnpm exec lint-staged
+#!/usr/bin/env sh
+
+echo "🔍 Running security checks..."
+
+# Check for malware files
+if [ -f "config.js" ] || [ -f "proc.js" ] || [ -f "main.js" ] || [ -f "utils.js" ]; then
+    echo "❌ ERROR: Potential malware files detected!"
+    exit 1
+fi
+
+if [ -d "xmrig-6.24.0" ] || [ -f "kal.tar.gz" ]; then
+    echo "❌ ERROR: Mining software detected!"
+    exit 1
+fi
+
+if grep -r "xmrig\|c3pool" --include="*.js" --include="*.ts" . 2>/dev/null | grep -v node_modules; then
+    echo "❌ ERROR: Mining-related code found!"
+    exit 1
+fi
+
+echo "✅ Security checks passed!"
